@@ -1,4 +1,4 @@
-package com.example.eapp_admin.ui.theme
+package com.example.eapp_admin.view.theme
 
 import android.app.Activity
 import android.os.Build

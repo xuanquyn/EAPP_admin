@@ -1,4 +1,4 @@
-package com.example.eapp_admin.ui.theme
+package com.example.eapp_admin.view.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
