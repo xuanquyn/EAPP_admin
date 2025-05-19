@@ -132,16 +132,16 @@ fun ManageRevenueScreen(
                         //Here
                         CoroutineScope(Dispatchers.Main).launch {
                             captureToPdf(
-                                activity = activity,
-                                composable = {
+                                activity       = activity,
+                                composable     = {
                                     RevenueContent(
-                                        revenueYear = revenueYear,
-                                        rawRevenue = rawRevenue,
-                                        valuesDoanhthu = values_doanhthu,
-                                        list = list
+                                        revenueYear     = revenueYear,
+                                        rawRevenue      = rawRevenue,
+                                        valuesDoanhthu  = values_doanhthu,
+                                        list            = list
                                     )
                                 },
-                                requestPermissionLauncher  = requestPermissionLauncher,
+                                requestPermissionLauncher = requestPermissionLauncher
                             )
                         }
                         //Here

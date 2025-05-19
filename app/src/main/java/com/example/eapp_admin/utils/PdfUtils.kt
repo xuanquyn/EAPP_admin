@@ -6,8 +6,9 @@ import android.graphics.Canvas
 import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
-import android.util.Log
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.Composable
@@ -17,114 +18,97 @@ import androidx.compose.ui.platform.compositionContext
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-/** Capture Compose UI -> PDF, sau đó lưu */
+/**
+ * Capture Compose UI -> PDF, sau đó lưu
+ */
 suspend fun captureToPdf(
     activity: ComponentActivity,
-    //view: View,
-    //Here
     composable: @Composable () -> Unit,
-    //Here
     requestPermissionLauncher: ActivityResultLauncher<Array<String>>
 ) {
-
     val permissionUtils = PermissionUtils(activity, requestPermissionLauncher)
 
     permissionUtils.checkAndRequestStoragePermission {
-        //createAndSavePdf(activity, view)
-
-        //Here
-        /* tạo ComposeView ẩn, render lại composable */
-        val cv = ComposeView(activity).apply {
-            /* 1️⃣  lấy CompositionContext của cửa sổ hiện tại */
-            val parent = (activity.window.decorView as View).compositionContext
-            setParentCompositionContext(parent)
-
-            /* 2️⃣  tùy chọn – dọn dẹp khi ComposeView bị bỏ */
-            setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnDetachedFromWindow
-            )
-
-            /* 3️⃣  render nội dung cần in */
+        // 1️⃣ Tạo ComposeView ẩn để render nội dung cần in
+        val composeView = ComposeView(activity).apply {
+            // Lấy compositionContext từ window decorView
+            val parentContext = (activity.window.decorView as View).compositionContext
+            setParentCompositionContext(parentContext)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent { composable() }
         }
 
-        // đo WRAP_CONTENT -> lấy hết chiều cao LazyColumn
-        val wSpec = View.MeasureSpec.makeMeasureSpec(
-            activity.window.decorView.width, View.MeasureSpec.EXACTLY)
-        val hSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        cv.measure(wSpec, hSpec)
-        cv.layout(0, 0, cv.measuredWidth, cv.measuredHeight)
+        // 2️⃣ Tạo container chứa ComposeView và add lên window
+        val container = FrameLayout(activity).apply {
+            visibility = View.INVISIBLE
+            addView(composeView)
+        }
+        val params = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        activity.addContentView(container, params)
 
-        // bitmap + PDF như cũ
-        val bitmap = Bitmap.createBitmap(cv.measuredWidth, cv.measuredHeight, Bitmap.Config.ARGB_8888)
-        cv.draw(Canvas(bitmap))
+        // 3️⃣ Đợi view attach & measured rồi capture
+        composeView.post {
+            // Đo với giới hạn chiều cao hữu hạn để tránh infinite constraints
+            val maxHeight = activity.window.decorView.height
+            val widthSpec = View.MeasureSpec.makeMeasureSpec(
+                activity.window.decorView.width,
+                View.MeasureSpec.EXACTLY
+            )
+            val heightSpec = View.MeasureSpec.makeMeasureSpec(
+                maxHeight,
+                View.MeasureSpec.AT_MOST
+            )
+            composeView.measure(widthSpec, heightSpec)
+            composeView.layout(0, 0, composeView.measuredWidth, composeView.measuredHeight)
 
-        saveBitmapToPdf(activity, bitmap)   // hàm bạn đã có
-        //Here
+            // Tạo bitmap và vẽ
+            val bitmap = Bitmap.createBitmap(
+                composeView.measuredWidth,
+                composeView.measuredHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            composeView.draw(Canvas(bitmap))
+
+            // 4️⃣ Lưu thành PDF
+            saveBitmapToPdf(activity, bitmap)
+
+            // 5️⃣ Remove view tạm
+            (container.parent as? ViewGroup)?.removeView(container)
+        }
     }
-    Log.d("PDF_captureToPdf", "run capturetoPDF")
-
 }
 
-/* ------------------------------------------------------------------------- */
-
-private fun createAndSavePdf(activity: ComponentActivity, view: View) {
-    val bitmap = captureViewToBitmap(view)
-    saveBitmapToPdf(activity, bitmap)
-}
-
-/** chụp *bất kỳ* View (AndroidComposeView hoặc ComposeView) thành Bitmap */
-private fun captureViewToBitmap(view: View): Bitmap {
-    Log.d("PDF_captureViewToBitmap", "run captureViewToBitmap")
-
-    var w = view.width
-    var h = view.height
-    if (w == 0 || h == 0) {
-        // view chưa đo => đo lại với WRAP_CONTENT
-        val widthSpec  = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        view.measure(widthSpec, heightSpec)
-        w = view.measuredWidth
-        h = view.measuredHeight
-        view.layout(0, 0, w, h)
-    }
-
-    val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    view.draw(canvas)
-    return bitmap
-}
-
-/** lưu Bitmap thành PDF (Downloads nếu có quyền; riêng app nếu không) */
+/**
+ * Lưu Bitmap thành PDF
+ */
 private fun saveBitmapToPdf(context: Context, bitmap: Bitmap) {
-    Log.d("PDF_start_saveBitmapToPdf", "run captureViewToBitmap")
-
-    val pdfDocument = PdfDocument()
+    val pdfDoc = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(bitmap.width, bitmap.height, 1).create()
-    val page = pdfDocument.startPage(pageInfo)
+    val page = pdfDoc.startPage(pageInfo)
     page.canvas.drawBitmap(bitmap, 0f, 0f, null)
-    pdfDocument.finishPage(page)
+    pdfDoc.finishPage(page)
 
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val fileName = "EAPP_Revenue_$timeStamp.pdf"
 
-    /* Chọn thư mục lưu tùy API */
     val dir: File = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     } else {
-        // Scoped-Storage: lưu về bộ nhớ riêng -> luôn thành công, không cần quyền
-        context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!
+        context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!! // Scoped storage
     }
-
-    val filePath = File(dir, fileName)
+    val file = File(dir, fileName)
 
     try {
-        FileOutputStream(filePath).use { pdfDocument.writeTo(it) }
+        FileOutputStream(file).use { pdfDoc.writeTo(it) }
         android.widget.Toast.makeText(
             context,
-            "PDF đã lưu: ${filePath.absolutePath}",
+            "PDF đã lưu: ${file.absolutePath}",
             android.widget.Toast.LENGTH_LONG
         ).show()
     } catch (e: Exception) {
@@ -135,13 +119,9 @@ private fun saveBitmapToPdf(context: Context, bitmap: Bitmap) {
         ).show()
         e.printStackTrace()
     } finally {
-        pdfDocument.close()
+        pdfDoc.close()
     }
-
-    Log.d("PDF_saveBitmapToPdf", "run saveBitmapToPdf")
-
 }
-
 
 //package com.example.eapp_admin.utils
 //
