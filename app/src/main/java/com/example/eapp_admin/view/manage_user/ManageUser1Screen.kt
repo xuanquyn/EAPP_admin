@@ -71,20 +71,7 @@ fun ManageUser1Screen(
     val userRepository = remember { UserRepository() } // Hoặc cách lấy repository phù hợp với ứng dụng của bạn
     val factory = remember { UserViewModelFactory(userRepository) }
     val userViewModel: UserViewModel = viewModel(factory = factory)
-//    val values_user = listOf(
-//        Entry(1f, 2f),
-//        Entry(2f, 4f),
-//        Entry(3f, 3f),
-//        Entry(4f, 4.5f),
-//        Entry(5f, 6f),
-//        Entry(6f, 4.5f),
-//        Entry(7f, 5f),
-//        Entry(8f, 6f),
-//        Entry(9f, 10f),
-//        Entry(10f, 8f),
-//        Entry(11f, 5f),
-//        Entry(12f, 8f)
-//    )
+
     val values_user by userViewModel.monthlyRegistrations.collectAsState()
     val userYear by userViewModel.currentYear.collectAsState()
 

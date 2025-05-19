@@ -60,6 +60,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.example.eapp_admin.utils.captureToPdf
 import com.github.mikephil.charting.data.Entry
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun ManageRevenueScreen(
@@ -80,6 +82,11 @@ fun ManageRevenueScreen(
     //Tính tổng doanh thu
     val count_premium by userViewModel.premiumUserCount.collectAsState()
     val rawRevenue = count_premium * 599000
+    val formattedRevenue = remember(rawRevenue) {
+        NumberFormat.getNumberInstance(Locale.US).apply {
+            isGroupingUsed = true
+        }.format(rawRevenue)
+    }
     val values_doanhthu by vm.monthlyRevenue.collectAsState()
     val list by vm.items.collectAsState()
     val revenueYear by vm.currentYear.collectAsState()
@@ -178,9 +185,9 @@ fun ManageRevenueScreen(
                             .padding(top = 10.dp)
                     )
                     Text(
-                        text = rawRevenue.toString(),
+                        text = formattedRevenue,
                         style = TextStyle(
-                            fontSize = 17.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold
                         ),
                         color = Color(0xFFFA6F3E),
