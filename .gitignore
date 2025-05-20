@@ -2,7 +2,7 @@
 .gradle
 /local.properties
 /.idea/caches
-/.idea/libraries
+/.idea/libraries1
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
@@ -13,3 +13,19 @@
 .externalNativeBuild
 .cxx
 local.properties
+# IntelliJ/Android Studio
+.idea/
+*.iml
+
+# Launcher foreground assets
+app/src/main/ic_launcher-playstore.png
+app/src/main/res/mipmap-*/ic_launcher_foreground.webp
+app/src/main/res/values/ic_launcher_background.xml
+# IntelliJ/Android Studio
+.idea/
+*.iml
+
+# Launcher foreground assets
+app/src/main/ic_launcher-playstore.png
+app/src/main/res/mipmap-*/ic_launcher_foreground.webp
+app/src/main/res/values/ic_launcher_background.xml
