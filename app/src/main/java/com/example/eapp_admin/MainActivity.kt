@@ -94,7 +94,8 @@ fun MyApp(storageLauncher: ActivityResultLauncher<Array<String>>) {
                     navController = navController,
                     authViewModel = authViewModel
                 )
-            }            composable(BottomNavItem.Dashboard.route) { DashboardScreen() }
+            }
+            composable(BottomNavItem.Dashboard.route) { DashboardScreen() }
             composable(BottomNavItem.ManageWord.route) { 
                 val vocabSetViewModel: VocabSetViewModel = viewModel()
                 ManageWordMainScreen(

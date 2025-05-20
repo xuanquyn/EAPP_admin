@@ -171,46 +171,46 @@ fun VocabSetDetailScreen(
                         )
                     )
                     
-                    Spacer(modifier = Modifier.height(16.dp))
+//                    Spacer(modifier = Modifier.height(16.dp))
                       // Status info
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Public status
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .clip(CircleShape)
-                                    .background(if (viewModel.isPublic) Color.Green else Color.Red)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (viewModel.isPublic) "Công khai" else "Riêng tư",
-                                fontSize = 14.sp
-                            )
-                        }
-                        
-                        // Premium status
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .clip(CircleShape)
-                                    .background(if (viewModel.premiumContent) Color(0xFFFFD700) else Color.Green)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (viewModel.premiumContent) "Premium" else "Miễn phí",
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        horizontalArrangement = Arrangement.SpaceBetween
+//                    ) {
+//                        // Public status
+//                        Row(
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            Box(
+//                                modifier = Modifier
+//                                    .size(12.dp)
+//                                    .clip(CircleShape)
+//                                    .background(if (viewModel.isPublic) Color.Green else Color.Red)
+//                            )
+//                            Spacer(modifier = Modifier.width(4.dp))
+//                            Text(
+//                                text = if (viewModel.isPublic) "Công khai" else "Riêng tư",
+//                                fontSize = 14.sp
+//                            )
+//                        }
+//
+//                        // Premium status
+//                        Row(
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            Box(
+//                                modifier = Modifier
+//                                    .size(12.dp)
+//                                    .clip(CircleShape)
+//                                    .background(if (viewModel.premiumContent) Color(0xFFFFD700) else Color.Green)
+//                            )
+//                            Spacer(modifier = Modifier.width(4.dp))
+//                            Text(
+//                                text = if (viewModel.premiumContent) "Premium" else "Miễn phí",
+//                                fontSize = 14.sp
+//                            )
+//                        }
+//                    }
                 }
             }
             
@@ -257,8 +257,8 @@ fun VocabSetDetailScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (viewModel.premiumContent) Color.Green else Color(0xFFFFD700),
-                            contentColor = if (viewModel.premiumContent) Color.White else Color.Black
+                            containerColor = if (viewModel.premiumContent) Color(0xFFA7EC5F) else Color(0xFFFFD700),
+                            contentColor = if (viewModel.premiumContent) Color.Black else Color.Black
                         )
                     ) {
                         Text(text = if (viewModel.premiumContent) "Đặt thành miễn phí" else "Đặt thành Premium")

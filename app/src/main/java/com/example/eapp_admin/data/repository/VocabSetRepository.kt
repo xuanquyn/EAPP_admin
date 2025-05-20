@@ -11,6 +11,12 @@ class VocabSetRepository {
     private val firestore = FirebaseFirestore.getInstance()
     val collection = firestore.collection("vocab_sets")
 
+    // Thêm reference đến users collection
+    private val usersCollection = FirebaseFirestore
+        .getInstance()
+        .collection("users")
+
+
     fun addVocabSet(
         vocabSet: VocabSet,
         onSuccess: () -> Unit,
@@ -71,19 +77,61 @@ class VocabSetRepository {
                 .limit(limit)
                 .get()
                 .await()
-            snapshot.documents.mapNotNull { doc ->
+
+            val adminSets = mutableListOf<VocabSet>()
+            for (doc in snapshot.documents) {
                 try {
-                    doc.toObject(VocabSet::class.java)?.apply { vocabSetId = doc.id }
+                    // Lấy đối tượng VocabSet
+                    val vs = doc.toObject(VocabSet::class.java)
+                        ?.apply { vocabSetId = doc.id }
+                        ?: continue
+
+                    // Lấy created_by để fetch user
+                    val createdById = doc.getString("created_by")
+                        ?: continue
+
+                    // Lấy user document
+                    val userDoc = usersCollection
+                        .document(createdById)
+                        .get()
+                        .await()
+                    val role = userDoc.getString("role")
+
+                    // Nếu là ADMIN thì add vào danh sách
+                    if (role == "ADMIN") {
+                        adminSets += vs
+                    }
                 } catch (e: Exception) {
-                    Log.e("VocabSetRepository", "Error mapping VocabSet ${doc.id}: $e")
-                    null
+                    Log.e("VocabSetRepository", "Lỗi xử lý ${doc.id}: $e")
                 }
             }
+            adminSets
         } catch (e: Exception) {
             Log.e("VocabSetRepository", "Error fetching vocab sets: $e")
             emptyList()
         }
     }
+
+//    suspend fun getAllVocabSets(limit: Long = 50): List<VocabSet> {
+//        return try {
+//            val snapshot = collection
+//                .orderBy("updated_at", Query.Direction.DESCENDING)
+//                .limit(limit)
+//                .get()
+//                .await()
+//            snapshot.documents.mapNotNull { doc ->
+//                try {
+//                    doc.toObject(VocabSet::class.java)?.apply { vocabSetId = doc.id }
+//                } catch (e: Exception) {
+//                    Log.e("VocabSetRepository", "Error mapping VocabSet ${doc.id}: $e")
+//                    null
+//                }
+//            }
+//        } catch (e: Exception) {
+//            Log.e("VocabSetRepository", "Error fetching vocab sets: $e")
+//            emptyList()
+//        }
+//    }
 
     suspend fun getVocabSetsByName(searchQuery: String, limit: Long = 50): List<VocabSet> {
         return try {
@@ -132,11 +180,12 @@ class VocabSetRepository {
     suspend fun getFreeVocabSets(limit: Long = 50): List<VocabSet> {
         return try {
             val snapshot = collection
-                .whereEqualTo("premiumContent", false)
+                .whereEqualTo("premium", false)
                 .orderBy("updated_at", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
+            Log.e("VocabSetRepository", "done")
             snapshot.documents.mapNotNull { doc ->
                 try {
                     doc.toObject(VocabSet::class.java)?.apply { vocabSetId = doc.id }
@@ -154,11 +203,12 @@ class VocabSetRepository {
     suspend fun getPremiumVocabSets(limit: Long = 50): List<VocabSet> {
         return try {
             val snapshot = collection
-                .whereEqualTo("premiumContent", true)
+                .whereEqualTo("premium", true)
                 .orderBy("updated_at", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
+            Log.e("VocabSetRepository", "done")
             snapshot.documents.mapNotNull { doc ->
                 try {
                     doc.toObject(VocabSet::class.java)?.apply { vocabSetId = doc.id }

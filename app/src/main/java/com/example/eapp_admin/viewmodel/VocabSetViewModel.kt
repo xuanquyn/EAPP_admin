@@ -42,6 +42,7 @@ class VocabSetViewModel(
             )
             
     // For editing a vocab set    var vocabSetId by mutableStateOf<String?>(null)
+    var vocabSetId by mutableStateOf("") //here
     var vocabSetName by mutableStateOf("")
     var isPublic by mutableStateOf(false)
     var created_by by mutableStateOf("")
@@ -157,7 +158,7 @@ class VocabSetViewModel(
         premiumContent = !premiumContent
     }
       fun clear() {
-        vocabSetId = null
+        vocabSetId = ""
         vocabSetName = ""
         isPublic = false
         created_by = ""

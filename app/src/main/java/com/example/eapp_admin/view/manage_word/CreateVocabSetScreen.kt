@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
 package com.example.eapp_admin.view.manage_word
 
 import android.widget.Toast
@@ -127,7 +128,7 @@ fun CreateVocabSetScreen(
                         )
                     )
                     Text(
-                        text = "Công khai",
+                        text = "Free",
                         fontSize = 16.sp
                     )
                 }

@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -310,13 +311,13 @@ fun VocabSetItem(
             Box(
                 modifier = Modifier
                     .padding(top = 4.dp)
-                    .width(68.dp)
-                    .height(17.dp)
+                    .width(74.dp)
+                    .height(23.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(15.dp)
+                        .height(23.dp)
                         .clip(shape = RoundedCornerShape(15.dp))
                         .background(color = Color(0xFFE2E2E2))
                         .align(Alignment.Center)
@@ -325,10 +326,11 @@ fun VocabSetItem(
                 Text(
                     text = "${vocabSet.terms.size} từ vựng",
                     color = Color.Black.copy(alpha = 0.7f),
-                    fontSize = 8.sp,
+                    fontSize = 12.sp,
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(horizontal = 4.dp)
+                        .padding(bottom=2.dp)
                 )
             }
             
@@ -337,20 +339,22 @@ fun VocabSetItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(top = 10.dp)
+                    .height(40.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.image),
                     contentDescription = "Creator avatar",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(20.dp)
+                        .size(25.dp)
                         .clip(CircleShape)
+                        .padding(bottom=2.dp)
                 )
                 
                 Text(
-                    text = if (vocabSet.created_by == "admin") "Admin" else "User",
+                    text = "Admin",
                     color = Color(0xFF343333),
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     modifier = Modifier
                         .padding(start = 4.dp)
                         .wrapContentHeight(align = Alignment.CenterVertically)
@@ -359,21 +363,21 @@ fun VocabSetItem(
                 // Premium badge if applicable
                 if (vocabSet.premiumContent) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     Box(
                         modifier = Modifier
-                            .size(16.dp)
+                            .size(23.dp)  // Tăng kích thước Box để chứa được Image
                             .clip(CircleShape)
                             .background(Color(0xFFFFD700))
-                            .padding(2.dp)
+                            .padding(6.dp)
                     ) {
-                        Text(
-                            text = "P",
-                            color = Color.Black,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align(Alignment.Center)
+                        Image(
+                            painter = painterResource(id = R.drawable.fluentpremium20regular),
+                            contentDescription = "Premium icon",
+                            colorFilter = ColorFilter.tint(Color.Gray),
+                            modifier = Modifier
+                                .requiredSize(18.dp)  // Sử dụng size thay vì requiredSize
+                                .align(Alignment.Center)  // Đặt ở giữa Box
                         )
                     }
                 }
