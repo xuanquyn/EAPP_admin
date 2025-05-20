@@ -179,21 +179,40 @@ class VocabSetRepository {
 
     suspend fun getFreeVocabSets(limit: Long = 50): List<VocabSet> {
         return try {
+            // 1️⃣ Lấy các vocab set free
             val snapshot = collection
-                .whereEqualTo("premium", false)
-                .orderBy("updated_at", Query.Direction.DESCENDING)
+                .whereEqualTo("premiumContent", false)
+                .orderBy("created_at", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
-            Log.e("VocabSetRepository", "done")
-            snapshot.documents.mapNotNull { doc ->
+
+            val result = mutableListOf<VocabSet>()
+
+            // 2️⃣ Với mỗi bộ, kiểm tra xem creator có phải ADMIN không
+            for (doc in snapshot.documents) {
                 try {
-                    doc.toObject(VocabSet::class.java)?.apply { vocabSetId = doc.id }
+                    val vs = doc.toObject(VocabSet::class.java)
+                        ?.apply { vocabSetId = doc.id }
+                        ?: continue
+
+                    val createdById = doc.getString("created_by") ?: continue
+
+                    val userDoc = usersCollection
+                        .document(createdById)
+                        .get()
+                        .await()
+                    val role = userDoc.getString("role")
+
+                    if (role == "ADMIN") {
+                        result += vs
+                    }
                 } catch (e: Exception) {
-                    Log.e("VocabSetRepository", "Error mapping VocabSet ${doc.id}: $e")
-                    null
+                    Log.e("VocabSetRepository", "Error processing doc ${doc.id}: $e")
                 }
             }
+
+            result
         } catch (e: Exception) {
             Log.e("VocabSetRepository", "Error fetching free vocab sets: $e")
             emptyList()
@@ -203,8 +222,8 @@ class VocabSetRepository {
     suspend fun getPremiumVocabSets(limit: Long = 50): List<VocabSet> {
         return try {
             val snapshot = collection
-                .whereEqualTo("premium", true)
-                .orderBy("updated_at", Query.Direction.DESCENDING)
+                .whereEqualTo("premiumContent", true)
+                .orderBy("created_at", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
