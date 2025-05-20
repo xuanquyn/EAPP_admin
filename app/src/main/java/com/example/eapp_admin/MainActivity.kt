@@ -19,12 +19,16 @@ import com.example.eapp_admin.view.bottomNav.BottomNavItem
 import com.example.eapp_admin.view.bottomNav.BottomNavigationBar
 import com.example.eapp_admin.view.manage_user.ManageUser1Screen
 import com.example.eapp_admin.view.manage_word.ManageWordMainScreen
+import com.example.eapp_admin.view.manage_word.CreateVocabSetScreen
+import com.example.eapp_admin.view.manage_word.VocabSetDetailScreen
+import com.example.eapp_admin.view.manage_word.EditVocabSetScreen
 import com.example.eapp_admin.view.theme.EAPP_adminTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import com.example.eapp_admin.viewmodel.AuthViewModel
+import com.example.eapp_admin.viewmodel.VocabSetViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -90,13 +94,41 @@ fun MyApp(storageLauncher: ActivityResultLauncher<Array<String>>) {
                     navController = navController,
                     authViewModel = authViewModel
                 )
+            }            composable(BottomNavItem.Dashboard.route) { DashboardScreen() }
+            composable(BottomNavItem.ManageWord.route) { 
+                val vocabSetViewModel: VocabSetViewModel = viewModel()
+                ManageWordMainScreen(
+                    viewModel = vocabSetViewModel,
+                    navController = navController
+                ) 
             }
-            composable(BottomNavItem.Dashboard.route) { DashboardScreen() }
-            composable(BottomNavItem.ManageWord.route) { ManageWordMainScreen() }
             composable(BottomNavItem.ManageUser.route) { ManageUser1Screen() }
-            composable(BottomNavItem.ManageRevenue.route) {
-                ManageRevenueScreen(
+            composable(BottomNavItem.ManageRevenue.route) {                ManageRevenueScreen(
                     requestPermissionLauncher = storageLauncher    // ← quan trọng
+                )
+            }
+            
+            // Vocabulary management routes
+            composable("createVocabSet") {
+                CreateVocabSetScreen(
+                    viewModel = viewModel(),
+                    navController = navController
+                )
+            }
+            composable("vocabSetDetail/{vocabSetId}") { backStackEntry ->
+                val vocabSetId = backStackEntry.arguments?.getString("vocabSetId") ?: ""
+                VocabSetDetailScreen(
+                    vocabSetId = vocabSetId,
+                    viewModel = viewModel(),
+                    navController = navController
+                )
+            }
+            composable("editVocabSet/{vocabSetId}") { backStackEntry ->
+                val vocabSetId = backStackEntry.arguments?.getString("vocabSetId") ?: ""
+                EditVocabSetScreen(
+                    vocabSetId = vocabSetId,
+                    viewModel = viewModel(),
+                    navController = navController
                 )
             }
 //            composable(BottomNavItem.ManageRevenue.route) { ManageRevenueScreen() }
